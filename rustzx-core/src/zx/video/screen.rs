@@ -153,37 +153,45 @@ impl<FB: FrameBuffer> ZXScreen<FB> {
     /// if clocks < previous call clocks then discard processing
     pub fn process_clocks(&mut self, clocks: usize) {
         let blocks = BlocksCount::from_clocks(clocks, self.machine);
-        // so, let's count of 8x1 blocks, which passed.
         let count = blocks.passed_from(&self.last_blocks);
+
         if count > 0 {
-            // fill pixels from prev to current
             let prev_block = self.last_blocks.lines * ATTR_COLS + self.last_blocks.columns;
             let curr_block = blocks.lines * ATTR_COLS + blocks.columns;
-            // so we know that some blocks have been passed
-            // block holds current blocks index
+
             for block in prev_block..curr_block {
                 let bitmap = self.banks[self.active_bank].bitmap[block];
-                // one attr per 8x8 area
                 let attr_row = block / (ATTR_COLS * 8);
                 let attr_col = block % ATTR_COLS;
+                let attr_index = attr_row * ATTR_COLS + attr_col;
+                let attr = self.banks[self.active_bank].attributes[attr_index];
+
                 let x_base = attr_col * 8;
                 let y_base = block / ATTR_COLS;
-                let attr = self.banks[self.active_bank].attributes[attr_row * ATTR_COLS + attr_col];
+
                 for pixel in 0..8 {
-                    // from most significant bit
                     let state = ((bitmap << pixel) & 0x80) != 0;
+
+                    // Inline the active_color method here
+                    let color = if state ^ (attr.flash && self.flash) {
+                        attr.ink
+                    } else {
+                        attr.paper
+                    };
+
                     self.buffer.set_color(
                         x_base + pixel,
                         y_base,
-                        attr.active_color(state, self.flash),
+                        color,
                         attr.brightness,
                     );
                 }
             }
-            // cahnge last block to current
             self.last_blocks = blocks;
         }
     }
+
+
 
     /// starts new frame
     pub fn new_frame(&mut self) {
