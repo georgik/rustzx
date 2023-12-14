@@ -87,7 +87,7 @@ pub struct ZXScreen<FB: FrameBuffer> {
     flash: bool,
     frame_counter: usize,
     buffer: FB,
-    back_buffer: FB,
+    //back_buffer: FB,
     banks: [ScreenBank; 2],
     active_bank: usize,
 }
@@ -106,12 +106,12 @@ impl<FB: FrameBuffer> ZXScreen<FB> {
                 FrameBufferSource::Screen,
                 context.clone(),
             ),
-            back_buffer: FB::new(
-                CANVAS_WIDTH,
-                CANVAS_HEIGHT,
-                FrameBufferSource::Screen,
-                context,
-            ),
+            // back_buffer: FB::new(
+            //     1,
+            //     1,
+            //     FrameBufferSource::Screen,
+            //     context,
+            // ),
             banks: [
                 ScreenBank {
                     attributes: Box::new([ZXAttribute::from_byte(0); ATTR_COLS * ATTR_ROWS]),
@@ -166,13 +166,15 @@ impl<FB: FrameBuffer> ZXScreen<FB> {
                 // one attr per 8x8 area
                 let attr_row = block / (ATTR_COLS * 8);
                 let attr_col = block % ATTR_COLS;
+                let x_base = attr_col * 8;
+                let y_base = block / ATTR_COLS;
                 let attr = self.banks[self.active_bank].attributes[attr_row * ATTR_COLS + attr_col];
                 for pixel in 0..8 {
                     // from most significant bit
                     let state = ((bitmap << pixel) & 0x80) != 0;
-                    self.back_buffer.set_color(
-                        (block % ATTR_COLS) * 8 + pixel,
-                        block / ATTR_COLS,
+                    self.buffer.set_color(
+                        x_base + pixel,
+                        y_base,
                         attr.active_color(state, self.flash),
                         attr.brightness,
                     );
@@ -189,10 +191,10 @@ impl<FB: FrameBuffer> ZXScreen<FB> {
         {
             let Self {
                 buffer,
-                back_buffer,
+                //back_buffer,
                 ..
             } = self;
-            core::mem::swap(buffer, back_buffer);
+            //core::mem::swap(buffer, back_buffer);
         }
         self.last_blocks = BlocksCount::new(0, 0);
         if self.frame_counter % 16 == 0 {
