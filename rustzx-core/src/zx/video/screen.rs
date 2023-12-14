@@ -159,32 +159,40 @@ impl<FB: FrameBuffer> ZXScreen<FB> {
             let prev_block = self.last_blocks.lines * ATTR_COLS + self.last_blocks.columns;
             let curr_block = blocks.lines * ATTR_COLS + blocks.columns;
 
+            // Initialize variables outside the loop
+            let mut attr_row = prev_block / (ATTR_COLS * 8);
+            let mut attr_col = prev_block % ATTR_COLS;
+            let mut y_base = prev_block / ATTR_COLS;
+            let mut colors = [crate::zx::video::colors::ZXColor::Black; 8]; // Use appropriate default color
+
             for block in prev_block..curr_block {
                 let bitmap = self.banks[self.active_bank].bitmap[block];
-                let attr_row = block / (ATTR_COLS * 8);
-                let attr_col = block % ATTR_COLS;
+
+                // Update attr_row, attr_col, and y_base only when needed
+                if block % ATTR_COLS == 0 {
+                    attr_row = block / (ATTR_COLS * 8);
+                    attr_col = 0;
+                    y_base = block / ATTR_COLS;
+                }
+
                 let attr_index = attr_row * ATTR_COLS + attr_col;
                 let attr = self.banks[self.active_bank].attributes[attr_index];
-
                 let x_base = attr_col * 8;
-                let y_base = block / ATTR_COLS;
 
                 for pixel in 0..8 {
                     let state = ((bitmap << pixel) & 0x80) != 0;
-
-                    // Inline the active_color method here
-                    let color = if state ^ (attr.flash && self.flash) {
+                    colors[pixel] = if state ^ (attr.flash && self.flash) {
                         attr.ink
                     } else {
                         attr.paper
                     };
+                }
 
-                    self.buffer.set_color(
-                        x_base + pixel,
-                        y_base,
-                        color,
-                        attr.brightness,
-                    );
+                self.buffer.set_colors(x_base, y_base, colors, attr.brightness);
+
+                // Increment attr_col at the end of the block
+                if attr_col < ATTR_COLS - 1 {
+                    attr_col += 1;
                 }
             }
             self.last_blocks = blocks;

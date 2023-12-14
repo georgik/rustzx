@@ -11,4 +11,5 @@ pub trait FrameBuffer {
     fn new(width: usize, height: usize, source: FrameBufferSource, context: Self::Context) -> Self;
     /// Set `color` with `brightness` for pixel on canvas at (`x`, `y`)
     fn set_color(&mut self, x: usize, y: usize, color: ZXColor, brightness: ZXBrightness);
+    fn set_colors(&mut self, x: usize, y: usize, colors: [ZXColor; 8], brightness: ZXBrightness);
 }
