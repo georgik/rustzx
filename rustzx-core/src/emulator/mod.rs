@@ -176,8 +176,8 @@ impl<H: Host> Emulator<H> {
         self.controller.screen.frame_buffer()
     }
 
-    pub fn reset_dirty_regions(&mut self) {
-        self.controller.screen.reset_dirty_regions();
+    pub fn reset_bounding_box(&mut self) {
+        self.controller.screen.reset_bounding_box();
     }
 
     #[cfg(feature = "precise-border")]

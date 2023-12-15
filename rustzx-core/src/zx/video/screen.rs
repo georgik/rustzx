@@ -131,8 +131,8 @@ impl<FB: FrameBuffer> ZXScreen<FB> {
         self.flash = !self.flash;
     }
 
-    pub fn reset_dirty_regions(&mut self) {
-        self.buffer.reset_dirty_regions();
+    pub fn reset_bounding_box(&mut self) {
+        self.buffer.reset_bounding_box();
     }
     /// transforms zx spectrum bank to local index
     fn local_bank(&self, bank: usize) -> Option<usize> {
@@ -208,11 +208,11 @@ impl<FB: FrameBuffer> ZXScreen<FB> {
     pub fn new_frame(&mut self) {
         // post finished bitmap to second buffer (all not-rendered part will be updated)
         {
-            let Self {
-                buffer,
+            // let Self {
+                // buffer,
                 //back_buffer,
-                ..
-            } = self;
+                // ..
+            // } = self;
             //core::mem::swap(buffer, back_buffer);
         }
         self.last_blocks = BlocksCount::new(0, 0);

@@ -12,5 +12,5 @@ pub trait FrameBuffer {
     /// Set `color` with `brightness` for pixel on canvas at (`x`, `y`)
     fn set_color(&mut self, x: usize, y: usize, color: ZXColor, brightness: ZXBrightness);
     fn set_colors(&mut self, x: usize, y: usize, colors: [ZXColor; 8], brightness: ZXBrightness);
-    fn reset_dirty_regions(&mut self);
+    fn reset_bounding_box(&mut self);
 }
