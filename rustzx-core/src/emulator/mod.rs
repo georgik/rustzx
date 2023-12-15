@@ -176,6 +176,10 @@ impl<H: Host> Emulator<H> {
         self.controller.screen.frame_buffer()
     }
 
+    pub fn reset_dirty_regions(&mut self) {
+        self.controller.screen.reset_dirty_regions();
+    }
+
     #[cfg(feature = "precise-border")]
     pub fn border_buffer(&self) -> &H::FrameBuffer {
         self.controller.border.frame_buffer()

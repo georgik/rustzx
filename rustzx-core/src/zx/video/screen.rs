@@ -131,6 +131,9 @@ impl<FB: FrameBuffer> ZXScreen<FB> {
         self.flash = !self.flash;
     }
 
+    pub fn reset_dirty_regions(&mut self) {
+        self.buffer.reset_dirty_regions();
+    }
     /// transforms zx spectrum bank to local index
     fn local_bank(&self, bank: usize) -> Option<usize> {
         match self.machine {
